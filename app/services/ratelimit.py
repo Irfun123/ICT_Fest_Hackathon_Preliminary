@@ -1,4 +1,5 @@
 """Per-user rolling-window rate limiting for booking creation."""
+import time
 from threading import Lock
 
 from ..errors import AppError
