@@ -174,3 +174,17 @@
 - **Bug:** `docker compose up --build` failed while uploading context because local cache/venv artifacts such as `.pytest_cache/` were not ignored.
 - **Why incorrect:** The challenge expects the project to build and run with Docker.
 - **Fix:** Added `.pytest_cache/`, `.codex-verify-venv/`, and `.venv-1/` to `.dockerignore`.
+
+## 26. Artificial sleeps slowed concurrent request paths
+
+- **Files/lines:** `app/routers/bookings.py`, lines 29-38; `app/services/ratelimit.py`, lines 13-14; `app/services/reference.py`, lines 12-14
+- **Bug:** Conflict checking, quota auditing, cancellation settlement, rate limiting, and reference-code generation included artificial `time.sleep()` delays.
+- **Why incorrect:** Rule 16 requires the service to stay live under concurrent valid requests; artificial sleeps in locked or high-traffic paths increase latency and concurrency risk.
+- **Fix:** Removed the sleep calls and made those helper functions no-ops.
+
+## 27. Availability endpoint could return cached stale data
+
+- **Files/lines:** `app/routers/rooms.py`, lines 66-93
+- **Bug:** `GET /rooms/{id}/availability` read from and wrote to an in-memory availability cache.
+- **Why incorrect:** Rule 13 requires availability to reflect current confirmed bookings immediately.
+- **Fix:** Removed the availability cache read/write from the endpoint so it always queries confirmed bookings from the database.

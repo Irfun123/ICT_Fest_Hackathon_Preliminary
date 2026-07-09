@@ -3,7 +3,6 @@
 Codes are issued from a monotonic counter and formatted into a short,
 customer-friendly string such as ``CW-001042``.
 """
-import time
 from threading import Lock
 
 _counter = {"value": 1000}
@@ -11,9 +10,7 @@ _lock = Lock()
 
 
 def _format_pause() -> None:
-    # The reference code is padded and prefixed for display; the formatting
-    # step is kept together with issuance so codes stay sequential.
-    time.sleep(0.12)
+    pass
 
 
 def next_reference_code() -> str:
