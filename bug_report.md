@@ -188,3 +188,24 @@
 - **Bug:** `GET /rooms/{id}/availability` read from and wrote to an in-memory availability cache.
 - **Why incorrect:** Rule 13 requires availability to reflect current confirmed bookings immediately.
 - **Fix:** Removed the availability cache read/write from the endpoint so it always queries confirmed bookings from the database.
+
+## 28. Notification side effects could deadlock
+
+- **Files/lines:** `app/services/notifications.py`, lines 10-32
+- **Bug:** Booking creation acquired the email lock before the audit lock, while cancellation acquired the audit lock before the email lock. Concurrent create and cancel requests could each hold one lock and wait forever for the other.
+- **Why incorrect:** Rule 16 requires the service to remain live; no combination of concurrent valid requests may hang the service.
+- **Fix:** Removed the simulated blocking notification locks and sleeps. Notification hooks now return immediately.
+
+## 29. Stats bookkeeping still slept in booking paths
+
+- **Files/lines:** `app/services/stats.py`, lines 6-18; `app/routers/bookings.py`, lines 119 and 218
+- **Bug:** The in-memory stats helper still slept during booking creation and cancellation, including while the booking lock was held.
+- **Why incorrect:** Rule 16 requires liveness under concurrent activity; artificial sleeps in locked request paths reduce throughput and increase timeout risk.
+- **Fix:** Removed the remaining artificial stats delay.
+
+## 30. Malformed booking datetimes could return a server error
+
+- **Files/lines:** `app/routers/bookings.py`, lines 80-84
+- **Bug:** Invalid datetime strings raised `ValueError` from `datetime.fromisoformat()` and could escape as a 500 response.
+- **Why incorrect:** Booking-window problems must use the contract error shape rather than an internal server error.
+- **Fix:** Catch invalid datetime parsing during booking creation and return `400 INVALID_BOOKING_WINDOW`.

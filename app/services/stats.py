@@ -3,13 +3,12 @@
 Confirmed-booking counts and revenue are tracked incrementally so the stats
 endpoint can serve them without re-aggregating the whole booking table.
 """
-import time
 
 _stats: dict[int, dict] = {}
 
 
 def _aggregate_pause() -> None:
-    time.sleep(0.1)
+    pass
 
 
 def record_create(room_id: int, price_cents: int) -> None:
